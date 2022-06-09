@@ -1,2 +1,3 @@
 .venv/
 GradientInversion/data/
+__pycache__/
