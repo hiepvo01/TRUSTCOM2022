@@ -356,6 +356,7 @@ class GradientInversion_Attack(BaseAttacker):
                 fake_pred, fake_gradients = self.custom_generate_fake_grad_fn(
                     self, fake_x, fake_label
                 )
+                
             optimizer.zero_grad()
             distance = self.distancefunc(
                 fake_gradients, received_gradients, self.gradient_ignore_pos
