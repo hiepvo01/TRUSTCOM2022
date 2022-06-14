@@ -1,0 +1,1 @@
+Sampled Training data for 10 clients with 100 images each

@@ -2,3 +2,4 @@
 GradientInversion/data/
 __pycache__/
 Federated/Pytorch/data
+data/train_data.pth
