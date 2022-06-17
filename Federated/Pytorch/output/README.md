@@ -1,0 +1,1 @@
+This folder contains the image generated from the Gradient Inversion Attack
