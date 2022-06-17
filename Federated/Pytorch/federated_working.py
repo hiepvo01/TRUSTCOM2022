@@ -49,21 +49,21 @@ transform_train = transforms.Compose([
     norm,
 ])
 
-# if data == "CIFAR10":
-#     # Loading CIFAR10 using torchvision.datasets
-#     traindata = datasets.CIFAR10('./data', train=True, download=True,
-#                         transform= transform_train)
-# else:
-#     # Loading CIFAR10 using torchvision.datasets
-#     traindata = datasets.MNIST('./data', train=True, download=True,
-#                         transform= transform_train)
+if data == "CIFAR10":
+    # Loading CIFAR10 using torchvision.datasets
+    traindata = datasets.CIFAR10('./data', train=True, download=True,
+                        transform= transform_train)
+else:
+    # Loading CIFAR10 using torchvision.datasets
+    traindata = datasets.MNIST('./data', train=True, download=True,
+                        transform= transform_train)
 
-# # Dividing the training data into num_clients, with each client having equal number of images
-# # traindata_split = torch.utils.data.random_split(traindata, [int(traindata.data.shape[0] / num_clients) for _ in range(num_clients)])
+# Dividing the training data into num_clients, with each client having equal number of images
+# traindata_split = torch.utils.data.random_split(traindata, [int(traindata.data.shape[0] / num_clients) for _ in range(num_clients)])
 
-# traindata_split = torch.utils.data.random_split(traindata, [100 for _ in range(600)])
-# traindata_split = traindata_split[:10]
-# torch.save(traindata_split, '../../data/MNIST.pth')
+traindata_split = torch.utils.data.random_split(traindata, [100 for _ in range(600)])
+traindata_split = traindata_split[:10]
+torch.save(traindata_split, '../../data/MNIST.pth')
 
 # Creating a pytorch loader for a Deep Learning model
 train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../../data/MNIST.pth')]
