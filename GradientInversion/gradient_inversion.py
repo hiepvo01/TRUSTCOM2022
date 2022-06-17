@@ -44,7 +44,7 @@ for i in range(len(train_loader)):
     client_label = []
     total_img = 0
     for batch_idx in range(len(train_loader[i])):
-        print("Client "+ str(i) +" | batch "+str(batch_idx) + " | total imgs " + len(client_img))
+        print("Client "+ str(i) +" | batch "+str(batch_idx) + " | total imgs " + str(len(client_img)))
         dataiter = iter(train_loader[i][batch_idx])
         images, labels = dataiter.next()
         images = images.cuda()
