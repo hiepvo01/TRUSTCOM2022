@@ -189,7 +189,11 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batc
 	# manually enumerate epochs
 	for i in range(n_steps):
 		# get randomly selected 'real' samples
+		#####################################################################################################################
+		#####################################################################################################################
 		[X_real, labels_real, labels_victim], y_real = generate_real_samples(dataset, half_batch)
+		#####################################################################################################################
+		#####################################################################################################################
 		# update discriminator model weights
 		_,d_r1,d_r2,d_r3 = d_model.train_on_batch(X_real, [y_real, labels_real, labels_victim])
 		# generate 'fake' examples
