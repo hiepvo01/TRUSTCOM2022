@@ -4,3 +4,4 @@ __pycache__/
 Federated/Pytorch/data
 data/*.pth
 GANs/results/ACGAN
+**/__pycache__/
