@@ -147,6 +147,7 @@ def client_update(client_model, optimizer, train_loader, epoch=5):
     """
     This function updates/trains client model on client data
     """
+    client_image = []
     model.train()
     for e in range(epoch):
         for batch_idx, (data, target) in enumerate(train_loader):
@@ -159,41 +160,28 @@ def client_update(client_model, optimizer, train_loader, epoch=5):
             loss = criterion(output, target)
             loss.backward(retain_graph=True)
             
-            received_gradients = torch.autograd.grad(loss, client_models[i].parameters())
+            received_gradients = torch.autograd.grad(loss, client_model.parameters())
             received_gradients = [cg.detach() for cg in received_gradients]
             
-            gradinversion = GradientInversion_Attack(client_models[i], (1, 28, 28), num_iteration=1000,
+            gradinversion = GradientInversion_Attack(client_model, (1, 28, 28), num_iteration=1000,
                                                 lr=1e2, log_interval=0,
                                                 optimizer_class=torch.optim.SGD,
                                                 distancename="l2", optimize_label=False,
-                                                bn_reg_layers=[client_models[i].body[4], client_models[i].body[8], client_models[i].body[12]],
+                                                bn_reg_layers=[client_model.body[4], client_model.body[8], client_model.body[12]],
                                                 group_num = 3,
                                                 tv_reg_coef=0.00, l2_reg_coef=0.0001,
                                                 bn_reg_coef=0.001, gc_reg_coef=0.001, device=device)
 
             result = gradinversion.group_attack(received_gradients, batch_size=batch_size)
 
-            fig = plt.figure()
             for bid in range(batch_size):
                 test_img = torch.from_numpy(((sum(result[0]) / len(result[0])).cpu().detach().numpy()[bid]))
                 img1 = test_img.swapaxes(0,1)
                 img1 = img1.swapaxes(1,2)
-                plt.imshow(torchvision.utils.make_grid(img1))
-                plt.savefig('output/batch'+batch_idx+'.png')
-
-            #     ax1 = fig.add_subplot(2, batch_size, bid+1)
-            #     ax1.imshow(torchvision.utils.make_grid(img1))
-            #     ax1.set_title(result[1][0][bid].item())
-            #     ax1.axis("off")
-            #     ax2 = fig.add_subplot(2, batch_size, batch_size+bid+1)
-            #     ax2.imshow((sum(result[0]) / len(result[0])).cpu().detach().numpy()[bid][0], cmap="gray")
-            #     ax2.axis("off")
-
-            # plt.suptitle("Result of GradInversion")
-            
-                
+                client_image.append(img1)
+                 
             optimizer.step()
-    return loss, received_gradients
+    return loss, received_gradients, client_image
 
 def server_aggregate(global_model, client_models):
     """
@@ -257,10 +245,14 @@ for r in range(num_rounds):
     # client update
     loss = 0
     
+    generated_images = []
+    
     for i in tqdm(range(num_selected)):
-        client_loss, received_gradients = client_update(client_models[i], opt[i], train_loader[client_idx[i]], epoch=1)
+        client_loss, received_gradients, client_image = client_update(client_models[i], opt[i], train_loader[client_idx[i]], epoch=1)
         loss += client_loss.item()
-        
+        generated_images.append(client_image)
+    
+    torch.save(generated_images, './output/generated_images.pth')
     losses_train.append(loss)
     # server aggregate
     server_aggregate(global_model, client_models)
