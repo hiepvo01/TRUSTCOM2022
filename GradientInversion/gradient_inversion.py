@@ -43,9 +43,10 @@ for i in range(len(train_loader)):
     client_img = []
     client_label = []
     total_img = 0
+    dataiter = iter(train_loader[i])
     for batch_idx in range(len(train_loader[i])):
-        print("Client "+ str(i) +" | batch "+str(batch_idx) + " | total imgs " + str(len(client_img)))
-        dataiter = iter(train_loader[i][batch_idx])
+        total_img += len(train_loader[i])
+        print("Client "+ str(i) +" | batch "+str(batch_idx) + " | total imgs " + str(total_img))
         images, labels = dataiter.next()
         images = images.cuda()
         labels = labels.cuda()
@@ -76,7 +77,6 @@ for i in range(len(train_loader)):
             client_img.append(img1)
             label = result[1][0][bid].item()
             client_label.append(label)
-    
     generated_images.append(client_img)
     generated_labels.append(client_label)
 torch.save(generated_images, 'generated_images.pth')
