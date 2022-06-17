@@ -150,6 +150,7 @@ def client_update(client_model, optimizer, train_loader, epoch=5):
     model.train()
     for e in range(epoch):
         for batch_idx, (data, target) in enumerate(train_loader):
+            print("Current batch: "+ batch_idx)
             
             data, target = data.cuda(), target.cuda()
             optimizer.zero_grad()
