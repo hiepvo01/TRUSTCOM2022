@@ -3,7 +3,6 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
-from tqdm.notebook import tqdm
 
 from aijack.attack import GradientInversion_Attack
 
