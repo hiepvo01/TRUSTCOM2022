@@ -95,17 +95,6 @@ def imshow(img):
     plt.show()
 
 
-# get some random training images
-dataiter = iter(train_loader[0])
-images, labels = dataiter.next()
-
-print(images[0].shape)
-
-# show images
-imshow(torchvision.utils.make_grid(images))
-# print labels
-print(' '.join(f'{classes[labels[j]]:5s}' for j in range(batch_size)))
-
 #################################
 ##### Neural Network model #####
 #################################
