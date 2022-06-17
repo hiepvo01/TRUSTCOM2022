@@ -1,6 +1,5 @@
 .venv/
 GradientInversion/data/
-__pycache__/
 Federated/Pytorch/data
 data/*.pth
 GANs/results/ACGAN
