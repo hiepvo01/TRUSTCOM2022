@@ -7,7 +7,7 @@ from torchvision.utils import save_image
 from aijack.attack import GradientInversion_Attack
 
 class LeNet(nn.Module):
-    def __init__(self, channel=3, hideen=588, num_classes=10):
+    def __init__(self, channel=1, hideen=588, num_classes=10):
         super(LeNet, self).__init__()
         act = nn.Sigmoid
         self.body = nn.Sequential(
@@ -31,7 +31,7 @@ class LeNet(nn.Module):
         out = self.fc(out)
         return out
 
-batch_size = 5
+batch_size = 3
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../data/cifar10.pth')]
@@ -57,7 +57,7 @@ for i in range(len(train_loader)):
         received_gradients = torch.autograd.grad(loss, net.parameters())
         received_gradients = [cg.detach() for cg in received_gradients]
 
-        gradinversion = GradientInversion_Attack(net, (3, 32, 32), num_iteration=5000,
+        gradinversion = GradientInversion_Attack(net, (3, 32, 32), num_iteration=1000,
                                             lr=1e2, log_interval=0,
                                             optimizer_class=torch.optim.SGD,
                                             distancename="l2", optimize_label=False,
