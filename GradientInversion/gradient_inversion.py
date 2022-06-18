@@ -85,7 +85,6 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
-import matplotlib.pyplot as plt
 from aijack.attack import GradientInversion_Attack
 
 class LeNet(nn.Module):
@@ -146,7 +145,7 @@ for i in range(len(train_loader)):
         received_gradients = torch.autograd.grad(loss, net.parameters())
         received_gradients = [cg.detach() for cg in received_gradients]
 
-        gradinversion = GradientInversion_Attack(net, (3, 32, 32), num_iteration=2000,
+        gradinversion = GradientInversion_Attack(net, (3, 32, 32), num_iteration=1000,
                                             lr=1e2, log_interval=0,
                                             optimizer_class=torch.optim.SGD,
                                             distancename="l2", optimize_label=False,
@@ -156,21 +155,14 @@ for i in range(len(train_loader)):
                                             bn_reg_coef=0.001, gc_reg_coef=0.001, device=device)
 
         result = gradinversion.group_attack(received_gradients, batch_size=batch_size)
-        fig = plt.figure()
         for bid in range(batch_size):
             test_img = torch.from_numpy(((sum(result[0]) / len(result[0])).cpu().detach().numpy()[bid]))
             img1 = test_img.swapaxes(0,1)
             img1 = img1.swapaxes(1,2)
             
-            ax1 = fig.add_subplot(2, batch_size, bid+1)
-            ax1.imshow(torchvision.utils.make_grid(img1))
-            ax1.set_title(result[1][0][bid].item())
-            ax1.axis("off")
-            
             client_img.append(img1)
             label = result[1][0][bid].item()
             client_label.append(label)
-        plt.show()
 
     generated_images.append(client_img)
     generated_labels.append(client_label)
