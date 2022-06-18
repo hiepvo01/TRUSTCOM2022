@@ -24,6 +24,7 @@ from tensorflow.keras.initializers import RandomNormal
 from matplotlib import pyplot
 import os
 import random
+import torch
 
 # define the standalone discriminator model
 def define_discriminator(in_shape=(28,28,1), n_classes=10, n_victims=10):
@@ -126,29 +127,32 @@ def define_gan(g_model, d_model):
 
 # load images
 def load_real_samples():
-    
-	# load dataset
-	(trainX, trainy), (_, _) = load_data()
-	# expand to 3d, e.g. add channels
-	X = expand_dims(trainX, axis=-1)
-	# convert from ints to floats
-	X = X.astype('float32')
-	# scale from [0,255] to [-1,1]
-	X = (X - 127.5) / 127.5
-	print(X.shape, trainy.shape)
-	return [X, trainy]
+    # load dataset
+    train_x = []
+    train_y = []
+    train_victim = []
+    for i in range(10):
+        train_victim += [i]*100
+    for client in range(10):
+        for item in torch.load('../data/MNIST.pth')[client]:
+            img = np.array(item[0])
+            img = np.transpose(img, (1, 2, 0))
+            train_x.append(img)
+            train_x = [x for x in train_x]
+            train_y.append(np.array(item[1]))
+    return [np.array(train_x), np.array(train_y), np.array(train_victim)]
 
 # select real samples
 def generate_real_samples(dataset, n_samples):
-	# split into images and labels
-	images, labels = dataset
-	# choose random instances
-	ix = randint(0, images.shape[0], n_samples)
-	# select images and labels
-	X, labels, victims = images[ix], labels[ix], np.array([random.randint(0, 9) for i in range(n_samples)])
- # generate class labels
-	y = ones((n_samples, 1))
-	return [X, labels, victims], y
+    # split into images and labels
+    images, labels, victims = dataset
+    # choose random instances
+    ix = randint(0, images.shape[0], n_samples)
+    
+    X, labels, victims = images[ix], labels[ix], victims[ix]
+    # generate class labels
+    y = ones((n_samples, 1))
+    return [X, labels, victims], y
 
 # generate points in latent space as input for the generator
 def generate_latent_points(latent_dim, n_samples, n_classes=10, n_victims=10):
@@ -175,7 +179,7 @@ def generate_fake_samples(generator, latent_dim, n_samples):
 # generate samples and save as a plot and save the model
 def summarize_performance(step, g_model, latent_dim, n_samples=100):
 	# prepare fake examples
-	[X, _], _ = generate_fake_samples(g_model, latent_dim, n_samples)
+	[X, _, _], _ = generate_fake_samples(g_model, latent_dim, n_samples)
 	# scale from [-1,1] to [0,1]
 	X = (X + 1) / 2.0
 	# plot images
@@ -196,7 +200,7 @@ def summarize_performance(step, g_model, latent_dim, n_samples=100):
 	print('>Saved: %s and %s' % (filename1, filename2))
 
 # train the generator and discriminator
-def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batch=64):
+def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batch=10):
 	# calculate the number of batches per training epoch
 	bat_per_epo = int(dataset[0].shape[0] / n_batch)
 	# calculate the number of training iterations
@@ -226,7 +230,7 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batc
 		# summarize loss on this batch
 		print('>%d, dr[%.3f,%.3f,%.3f], df[%.3f,%.3f,%.3f], g[%.3f,%.3f,%.3f]' % (i+1, d_r1,d_r2,d_r3, d_f,d_f2,d_f3, g_1,g_2,g_3))
 		# evaluate the model performance every 'epoch'
-		if (i+1) % (bat_per_epo * 10) == 0:
+		if (i+1) % 1000 == 0:
 			summarize_performance(i, g_model, latent_dim)
    
 # make folder for results
