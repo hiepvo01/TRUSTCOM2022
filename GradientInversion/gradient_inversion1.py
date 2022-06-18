@@ -31,7 +31,7 @@ class LeNet(nn.Module):
         out = self.fc(out)
         return out
 
-batch_size = 5
+batch_size = 4
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../data/MNIST.pth')]
