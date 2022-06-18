@@ -5,7 +5,7 @@ from numpy import expand_dims
 from numpy.random import randn
 from numpy.random import randint
 import numpy as np
-from tensorflow.keras.datasets.fashion_mnist import load_data
+from tensorflow.keras.datasets.cifar10 import load_data
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
@@ -26,27 +26,37 @@ import os
 import random
 
 # define the standalone discriminator model
-def define_discriminator(in_shape=(28,28,1), n_classes=10, n_victims=10):
+def define_discriminator(in_shape=(32, 32, 3), n_classes=10, n_victims=10):
 	# weight initialization
 	init = RandomNormal(stddev=0.02)
 	# image input
 	in_image = Input(shape=in_shape)
 	# downsample to 14x14
-	fe = Conv2D(32, (3,3), strides=(2,2), padding='same', kernel_initializer=init)(in_image)
+	fe = Conv2D(16, (3,3), strides=(2,2), padding='same', kernel_initializer=init)(in_image)
 	fe = LeakyReLU(alpha=0.2)(fe)
 	fe = Dropout(0.5)(fe)
 	# normal
-	fe = Conv2D(64, (3,3), padding='same', kernel_initializer=init)(fe)
+	fe = Conv2D(32, (3,3), strides=(1,1), padding='same', kernel_initializer=init)(fe)
 	fe = BatchNormalization()(fe)
 	fe = LeakyReLU(alpha=0.2)(fe)
 	fe = Dropout(0.5)(fe)
-	# downsample to 7x7
-	fe = Conv2D(128, (3,3), strides=(2,2), padding='same', kernel_initializer=init)(fe)
+ # normal
+	fe = Conv2D(64, (3,3), strides=(2,2), padding='same', kernel_initializer=init)(fe)
+	fe = BatchNormalization()(fe)
+	fe = LeakyReLU(alpha=0.2)(fe)
+	fe = Dropout(0.5)(fe)
+	# downsample to 8x8
+	fe = Conv2D(128, (3,3), strides=(1,1), padding='same', kernel_initializer=init)(fe)
 	fe = BatchNormalization()(fe)
 	fe = LeakyReLU(alpha=0.2)(fe)
 	fe = Dropout(0.5)(fe)
 	# normal
-	fe = Conv2D(256, (3,3), padding='same', kernel_initializer=init)(fe)
+	fe = Conv2D(256, (3,3), strides=(2,2), padding='same', kernel_initializer=init)(fe)
+	fe = BatchNormalization()(fe)
+	fe = LeakyReLU(alpha=0.2)(fe)
+	fe = Dropout(0.5)(fe)
+ # normal
+	fe = Conv2D(512, (3,3), padding='same', kernel_initializer=init)(fe)
 	fe = BatchNormalization()(fe)
 	fe = LeakyReLU(alpha=0.2)(fe)
 	fe = Dropout(0.5)(fe)
@@ -74,36 +84,40 @@ def define_generator(latent_dim, n_classes=10, n_victims=10):
 	# embedding for categorical input
 	li = Embedding(n_classes, 50)(in_label)    
     # linear multiplication
-	n_nodes = 7 * 7
+	n_nodes = 8 * 8
 	li = Dense(n_nodes, kernel_initializer=init)(li)
 	# reshape to additional channel
-	li = Reshape((7, 7, 1))(li)
+	li = Reshape((8, 8, 1))(li)
  
  # victim input
 	in_victim = Input(shape=(1,))
 	# embedding for categorical input
 	vi = Embedding(n_victims, 50)(in_victim)    
     # linear multiplication
-	n_nodes = 7 * 7
+	n_nodes = 8 * 8
 	vi = Dense(n_nodes, kernel_initializer=init)(vi)
 	# reshape to additional channel
-	vi = Reshape((7, 7, 1))(vi)
+	vi = Reshape((8, 8, 1))(vi)
  
 	# image generator input
 	in_lat = Input(shape=(latent_dim,))
-	# foundation for 7x7 image
-	n_nodes = 384 * 7 * 7
+	# foundation for 8x8 image
+	n_nodes = 384 * 8 * 8
 	gen = Dense(n_nodes, kernel_initializer=init)(in_lat)
 	gen = Activation('relu')(gen)
-	gen = Reshape((7, 7, 384))(gen)
+	gen = Reshape((8, 8, 384))(gen)
 	# merge image gen and label input
 	merge = Concatenate()([gen, li, vi])
-	# upsample to 14x14
+	# upsample to 16x16
 	gen = Conv2DTranspose(192, (5,5), strides=(2,2), padding='same', kernel_initializer=init)(merge)
 	gen = BatchNormalization()(gen)
 	gen = Activation('relu')(gen)
-	# upsample to 28x28
-	gen = Conv2DTranspose(1, (5,5), strides=(2,2), padding='same', kernel_initializer=init)(gen)
+ # upsample to 16x16
+	gen = Conv2DTranspose(96, (5,5), strides=(2,2), padding='same', kernel_initializer=init)(merge)
+	gen = BatchNormalization()(gen)
+	gen = Activation('relu')(gen)
+	# upsample to 32x32
+	gen = Conv2DTranspose(3, (5,5), strides=(2,2), padding='same', kernel_initializer=init)(gen)
 	out_layer = Activation('tanh')(gen)
 	# define model
 	model = Model([in_lat, in_label, in_victim], out_layer)
@@ -134,7 +148,7 @@ def load_real_samples():
 	# convert from ints to floats
 	X = X.astype('float32')
 	# scale from [0,255] to [-1,1]
-	X = (X - 127.5) / 127.5
+	X = (X - 128.5) / 128.5
 	print(X.shape, trainy.shape)
 	return [X, trainy]
 
