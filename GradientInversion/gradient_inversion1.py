@@ -169,5 +169,5 @@ for i in range(len(train_loader)):
             client_label.append(label)
     generated_images.append(client_img)
     generated_labels.append(client_label)
-torch.save(generated_images, 'generated_images1.pth')
-torch.save(generated_labels, 'generated_labels1.pth')
+torch.save(generated_images, 'generated_images_test1.pth')
+torch.save(generated_labels, 'generated_labels_test1.pth')
