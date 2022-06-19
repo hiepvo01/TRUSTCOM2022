@@ -110,10 +110,6 @@ class LeNet(nn.Module):
             nn.BatchNorm2d(128),
             nn.LeakyReLU(negative_slope=0.2),
             nn.Dropout(0.5),
-            nn.Conv2d(128, 256, kernel_size=(3,3), padding=1),
-            nn.BatchNorm2d(256),
-            nn.LeakyReLU(negative_slope=0.2),
-            nn.Dropout(0.5),
             nn.Flatten()
         )
         self.fc = nn.Sequential(
