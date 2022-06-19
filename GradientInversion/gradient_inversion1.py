@@ -153,7 +153,7 @@ for i in range(len(train_loader)):
                                             lr=1e2, log_interval=0,
                                             optimizer_class=torch.optim.SGD,
                                             distancename="l2", optimize_label=False,
-                                            bn_reg_layers=[net.body[4], net.body[8], net.body[12]],
+                                            bn_reg_layers=[net.body[4], net.body[8]],
                                             group_num = 3,
                                             tv_reg_coef=0.00, l2_reg_coef=0.0001,
                                             bn_reg_coef=0.001, gc_reg_coef=0.001, device=device)
