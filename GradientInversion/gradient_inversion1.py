@@ -109,6 +109,9 @@ class LeNet(nn.Module):
             nn.Conv2d(12, 12, kernel_size=5, padding=5 // 2, stride=1),
             nn.BatchNorm2d(12),
             act(),
+            nn.Conv2d(12, 12, kernel_size=5, padding=5 // 2, stride=1),
+            nn.BatchNorm2d(12),
+            act(),
         )
         self.fc = nn.Sequential(
             nn.Linear(hideen, num_classes)
@@ -120,7 +123,7 @@ class LeNet(nn.Module):
         out = self.fc(out)
         return out
 
-batch_size = 2
+batch_size = 4
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../data/MNIST.pth')]
@@ -146,7 +149,7 @@ for i in range(len(train_loader)):
         received_gradients = torch.autograd.grad(loss, net.parameters())
         received_gradients = [cg.detach() for cg in received_gradients]
 
-        gradinversion = GradientInversion_Attack(net, (1, 28, 28), num_iteration=1200,
+        gradinversion = GradientInversion_Attack(net, (1, 28, 28), num_iteration=1400,
                                             lr=1e2, log_interval=0,
                                             optimizer_class=torch.optim.SGD,
                                             distancename="l2", optimize_label=False,
