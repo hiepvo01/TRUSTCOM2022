@@ -105,7 +105,7 @@ class LeNet(nn.Module):
             nn.Flatten()
         )
         self.fc = nn.Sequential(
-            nn.Linear(16384, num_classes)
+            nn.Linear(8192, num_classes)
             # nn.Linear(hideen, num_classes)
         )
 
@@ -141,7 +141,7 @@ for i in range(len(train_loader)):
         received_gradients = torch.autograd.grad(loss, net.parameters())
         received_gradients = [cg.detach() for cg in received_gradients]
 
-        gradinversion = GradientInversion_Attack(net, (3, 32, 32), num_iteration=1000,
+        gradinversion = GradientInversion_Attack(net, (3, 32, 32), num_iteration=2000,
                                             lr=1e2, log_interval=0,
                                             optimizer_class=torch.optim.SGD,
                                             distancename="l2", optimize_label=False,
