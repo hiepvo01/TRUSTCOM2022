@@ -105,7 +105,7 @@ class LeNet(nn.Module):
             nn.Flatten()
         )
         self.fc = nn.Sequential(
-            nn.Linear(8192, num_classes)
+            nn.Linear(6272, num_classes)
             # nn.Linear(hideen, num_classes)
         )
 
@@ -122,6 +122,7 @@ train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=Tr
 
 generated_images = []
 generated_labels = []
+transform = transforms.Grayscale()
 
 for i in range(len(train_loader)):
     client_img = []
@@ -130,18 +131,19 @@ for i in range(len(train_loader)):
     for batch_idx in range(len(train_loader[i])):
         print("Client "+ str(i) +" | batch "+str(batch_idx) + " | total imgs " + str(len(client_img)))
         images, labels = dataiter.next()
+        images = [transform(img) for img in images]
         images = images.cuda()
         labels = labels.cuda()
 
         criterion = nn.CrossEntropyLoss()
-        net = LeNet(channel=3, hideen=768, num_classes=10)
+        net = LeNet(channel=1, hideen=768, num_classes=10)
         net.to(device)
         pred = net(images[:batch_size])
         loss = criterion(pred, labels[:batch_size])
         received_gradients = torch.autograd.grad(loss, net.parameters())
         received_gradients = [cg.detach() for cg in received_gradients]
 
-        gradinversion = GradientInversion_Attack(net, (3, 32, 32), num_iteration=2000,
+        gradinversion = GradientInversion_Attack(net, (1, 32, 32), num_iteration=2000,
                                             lr=1e2, log_interval=0,
                                             optimizer_class=torch.optim.SGD,
                                             distancename="l2", optimize_label=False,
