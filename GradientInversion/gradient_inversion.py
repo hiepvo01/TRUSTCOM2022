@@ -131,7 +131,7 @@ for i in range(len(train_loader)):
     for batch_idx in range(len(train_loader[i])):
         print("Client "+ str(i) +" | batch "+str(batch_idx) + " | total imgs " + str(len(client_img)))
         images, labels = dataiter.next()
-        images = [transform(img) for img in images]
+        images = torch.tensor([transform(img) for img in images])
         images = images.cuda()
         labels = labels.cuda()
 
