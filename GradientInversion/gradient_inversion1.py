@@ -113,7 +113,7 @@ class LeNet(nn.Module):
             nn.Flatten()
         )
         self.fc = nn.Sequential(
-            nn.Linear(12544, num_classes)
+            nn.Linear(6272, num_classes)
             # nn.Linear(hideen, num_classes)
         )
 
