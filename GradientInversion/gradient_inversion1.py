@@ -149,7 +149,7 @@ for i in range(len(train_loader)):
         received_gradients = torch.autograd.grad(loss, net.parameters())
         received_gradients = [cg.detach() for cg in received_gradients]
 
-        gradinversion = GradientInversion_Attack(net, (1, 28, 28), num_iteration=1000,
+        gradinversion = GradientInversion_Attack(net, (1, 28, 28), num_iteration=2500,
                                             lr=1e2, log_interval=0,
                                             optimizer_class=torch.optim.SGD,
                                             distancename="l2", optimize_label=False,
