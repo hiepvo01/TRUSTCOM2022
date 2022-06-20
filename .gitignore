@@ -4,3 +4,4 @@ Federated/Pytorch/data
 data/*.pth
 GANs/results/ACGAN
 **/__pycache__/
+GradientInversion/MNIST
