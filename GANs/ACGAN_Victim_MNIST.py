@@ -24,9 +24,64 @@ from matplotlib import pyplot
 import os
 import random
 import torch
+import cv2
+import torch.nn as nn
+import math
+from scipy.signal import convolve2d
+
+
+def estimate_noise(I):
+  H, W = I.shape
+  M = [[1, -2, 1],
+       [-2, 4, -2],
+       [1, -2, 1]]
+  sigma = np.sum(np.sum(np.absolute(convolve2d(I, M))))
+  sigma = sigma * math.sqrt(0.5 * math.pi) / (6 * (W-2) * (H-2))
+
+  return round(sigma, 2)
 
 images = torch.load('../GradientInversion/generated_images1.pth')
-labels = torch.load('../GradientInversion/generated_labels1.pth')
+images1 = torch.load('../GradientInversion/generated_images2.pth')
+
+for i in range(10):
+  images[i] += images1[i]
+
+for i in range(10):
+  imgs = images[i]
+  imgs = [img for img in imgs if estimate_noise(np.array(cv2.medianBlur(img.numpy(),3))) < 0.5]
+  images[i] = imgs
+
+class VGG(nn.Module):
+    def __init__(self, channels=1, hideen=12544, num_classes=10):
+        super(VGG, self).__init__()
+        self.body = nn.Sequential(
+            nn.Conv2d(channels, 32, kernel_size=(3,3), stride=(2,2), padding=1),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Dropout(0.5),
+            nn.Conv2d(32, 64, kernel_size=(3,3), padding=1),
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Dropout(0.5),
+            nn.Conv2d(64, 128, kernel_size=(3,3), stride=(2,2), padding=1),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Dropout(0.5),
+            nn.Conv2d(128, 256, kernel_size=(3,3), padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(negative_slope=0.2),
+            nn.Dropout(0.5),
+            nn.Flatten()
+        )
+        self.fc = nn.Sequential(
+            nn.Linear(12544, num_classes)
+            # nn.Linear(hideen, num_classes)
+        )
+
+    def forward(self, x):
+        out = self.body(x)
+        out = out.view(out.size(0), -1)
+        out = self.fc(out)
+        return out
 
 # define the standalone discriminator model
 def define_discriminator(in_shape=(28,28,1), n_classes=10, n_victims=10):
@@ -134,10 +189,22 @@ def load_real_samples():
     train_y = []
     train_victim = []
     for client in range(10):
-        for idx in range(100):
-          train_x.append(np.array(images[client][idx]))
-          train_y.append(np.array(labels[client][idx]))
-        train_victim += [client]*100
+        for idx in range(len(images[client])):
+            img = cv2.medianBlur(images[client][idx].numpy(),3)
+            test1 = images[client][idx].numpy()
+            # test1 = np.expand_dims(img, axis=0)
+            # test1 = np.transpose(test1, (1, 2, 0))
+            train_x.append(test1)
+            
+            test = np.expand_dims(img, axis=0)
+            test = np.expand_dims(test, axis=0)
+            model = torch.load("../pretrained/test_torch.pt")
+            tc_img = torch.tensor(test).cuda()
+            output = model(tc_img)
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            pred = pred.cpu().detach().numpy()[0][0]
+            train_y.append(pred)
+        train_victim += [client]*len(images[client])
 
     return [np.array(train_x), np.array(train_y), np.array(train_victim)]
 
