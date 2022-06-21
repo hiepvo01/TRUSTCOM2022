@@ -4,6 +4,9 @@ import torchvision
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
 import cv2
+import numpy as np
+import math
+from scipy.signal import convolve2d
 
 from aijack.attack import GradientInversion_Attack
 
@@ -38,10 +41,20 @@ class LeNet(nn.Module):
 batch_size = 4
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../data/MNIST.pth')]
+train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../data/MNIST1.pth')]
 
 generated_images = []
 generated_labels = []
+
+def estimate_noise(I):
+  H, W = I.shape
+  M = [[1, -2, 1],
+       [-2, 4, -2],
+       [1, -2, 1]]
+  sigma = np.sum(np.sum(np.absolute(convolve2d(I, M))))
+  sigma = sigma * math.sqrt(0.5 * math.pi) / (6 * (W-2) * (H-2))
+
+  return round(sigma, 2)
 
 for i in range(len(train_loader)):
     client_img = []
@@ -77,11 +90,12 @@ for i in range(len(train_loader)):
             test_img = cv2.medianBlur(test_img, 3)
             img1 = test_img.swapaxes(0,1)
             img1 = img1.swapaxes(1,2)
-            client_img.append(img1)
-            label = result[1][0][bid].item()
-            client_label.append(label)
+            if estimate_noise(np.array(cv2.medianBlur(img1,3))) < 0.5:
+                client_img.append(img1)
+                label = result[1][0][bid].item()    
+                client_label.append(label)  
             
     generated_images.append(client_img)
     generated_labels.append(client_label)
-torch.save(generated_images, 'generated_images2.pth')
-torch.save(generated_labels, 'generated_labels2.pth')
+torch.save(generated_images, 'generated_images3.pth')
+torch.save(generated_labels, 'generated_labels3.pth')
