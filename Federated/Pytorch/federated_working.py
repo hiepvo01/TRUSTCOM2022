@@ -61,9 +61,9 @@ else:
 # Dividing the training data into num_clients, with each client having equal number of images
 # traindata_split = torch.utils.data.random_split(traindata, [int(traindata.data.shape[0] / num_clients) for _ in range(num_clients)])
 
-traindata_split = torch.utils.data.random_split(traindata, [100 for _ in range(500)])
+traindata_split = torch.utils.data.random_split(traindata, [200 for _ in range(300)])
 traindata_split = traindata_split[:10]
-torch.save(traindata_split, '../../data/cifar10.pth')
+torch.save(traindata_split, '../../data/MNIST1.pth')
 
 # # Creating a pytorch loader for a Deep Learning model
 train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../../data/MNIST.pth')]
