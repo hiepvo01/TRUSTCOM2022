@@ -3,7 +3,6 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
-import cv2
 import numpy as np
 import math
 from scipy.signal import convolve2d
@@ -87,10 +86,9 @@ for i in range(len(train_loader)):
 
         for bid in range(batch_size):
             test_img = torch.from_numpy(((sum(result[0]) / len(result[0])).cpu().detach().numpy()[bid]))
-            test_img = cv2.medianBlur(test_img, 3)
             img1 = test_img.swapaxes(0,1)
             img1 = img1.swapaxes(1,2)
-            if estimate_noise(np.array(cv2.medianBlur(img1,3))) < 0.5:
+            if estimate_noise(img1, 3) < 0.5:
                 client_img.append(img1)
                 label = result[1][0][bid].item()    
                 client_label.append(label)  
