@@ -23,9 +23,6 @@ class LeNet(nn.Module):
             nn.Conv2d(12, 12, kernel_size=5, padding=5 // 2, stride=1),
             nn.BatchNorm2d(12),
             act(),
-            nn.Conv2d(12, 12, kernel_size=5, padding=5 // 2, stride=1),
-            nn.BatchNorm2d(12),
-            act(),
         )
         self.fc = nn.Sequential(
             nn.Linear(hideen, num_classes)
@@ -73,12 +70,12 @@ for i in range(len(train_loader)):
         received_gradients = torch.autograd.grad(loss, net.parameters())
         received_gradients = [cg.detach() for cg in received_gradients]
 
-        gradinversion = GradientInversion_Attack(net, (1, 28, 28), num_iteration=1400,
+        gradinversion = GradientInversion_Attack(net, (1, 28, 28), num_iteration=1100,
                                             lr=1e2, log_interval=0,
                                             optimizer_class=torch.optim.SGD,
                                             distancename="l2", optimize_label=False,
-                                            bn_reg_layers=[net.body[1], net.body[4], net.body[7], net.body[10]],
-                                            group_num = 3,
+                                            bn_reg_layers=[net.body[1], net.body[4], net.body[7]],
+                                            group_num = 5,
                                             tv_reg_coef=0.00, l2_reg_coef=0.0001,
                                             bn_reg_coef=0.001, gc_reg_coef=0.001, device=device)
 
@@ -88,7 +85,7 @@ for i in range(len(train_loader)):
             test_img = torch.from_numpy(((sum(result[0]) / len(result[0])).cpu().detach().numpy()[bid]))
             img1 = test_img.swapaxes(0,1)
             img1 = img1.swapaxes(1,2)
-            if estimate_noise(img1, 3) < 0.5:
+            if estimate_noise(img1) < 0.5:
                 client_img.append(img1)
                 label = result[1][0][bid].item()    
                 client_label.append(label)  
