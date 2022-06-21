@@ -20,7 +20,7 @@ num_rounds = 5
 epochs = 5
 batch_size = 3
 client_victim = 1
-data = "CIFAR10"
+data = "MNIST"
 chosen_model = ''
 if data == "CIFAR10":
     chosen_model = 'test'
