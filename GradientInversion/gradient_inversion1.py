@@ -85,9 +85,10 @@ for i in range(len(train_loader)):
             test_img = torch.from_numpy(((sum(result[0]) / len(result[0])).cpu().detach().numpy()[bid]))
             img1 = test_img.swapaxes(0,1)
             img1 = img1.swapaxes(1,2)
+            client_img.append(img1)
             label = result[1][0][bid].item()    
             client_label.append(label)  
-        
+            
     generated_images.append(client_img)
     generated_labels.append(client_label)
 torch.save(generated_images, 'generated_images3.pth')
