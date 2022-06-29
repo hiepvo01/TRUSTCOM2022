@@ -55,7 +55,7 @@ if data == "CIFAR10":
                         transform= transform_train)
 else:
     # Loading CIFAR10 using torchvision.datasets
-    traindata = datasets.MNIST('./data', train=True, download=True,
+    traindata = datasets.FashionMNIST('./data', train=True, download=True,
                         transform= transform_train)
 
 # Dividing the training data into num_clients, with each client having equal number of images
@@ -63,10 +63,10 @@ else:
 
 traindata_split = torch.utils.data.random_split(traindata, [200 for _ in range(300)])
 traindata_split = traindata_split[:10]
-torch.save(traindata_split, '../../data/MNIST1.pth')
+torch.save(traindata_split, '../../data/fashion.pth')
 
 # # Creating a pytorch loader for a Deep Learning model
-train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../../data/MNIST.pth')]
+train_loader = [torch.utils.data.DataLoader(x, batch_size=batch_size, shuffle=True) for x in torch.load('../../data/fashion.pth')]
 
 # Normalizing the test images
 transform_test = transforms.Compose([
@@ -82,7 +82,7 @@ if data == "CIFAR10":
 else:
     # Loading the test iamges and thus converting them into a test_loader
     test_loader = torch.utils.data.DataLoader(
-            datasets.MNIST('./data', train=False, transform=transform_test
+            datasets.FashionMNIST('./data', train=False, transform=transform_test
             ), batch_size=batch_size, shuffle=True)
     
 classes = ('plane', 'car', 'bird', 'cat',
@@ -251,3 +251,5 @@ for r in range(num_rounds):
     acc_test.append(acc)
     print('%d-th round' % r)
     print('average train loss %0.3g | test loss %0.3g | test acc: %0.3f' % (loss / num_selected, test_loss, acc))
+    
+torch.save(global_model, "../../pretrained/test_torch_fashion.pt")
